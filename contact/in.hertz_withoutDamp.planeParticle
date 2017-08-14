@@ -68,7 +68,7 @@ fix		grav group1 gravity ${gravity} vector 0 0 -1
 
 fix		1 all nve/sphere
 
-dump		1 all custom ${dumpfreq} ${name}_pour.dump &
+dump		1 all custom ${dumpfreq} ${name}_hertz.dump &
 		id type radius x y z
 
 thermo_style	custom step cpu atoms ke
