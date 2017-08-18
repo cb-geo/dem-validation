@@ -81,4 +81,4 @@ dump		1 all custom ${dumpfreq} ${name}_hertz.dump &
 
 thermo_style	custom step cpu atoms ke
 
-run		9500000
+run		8500000
