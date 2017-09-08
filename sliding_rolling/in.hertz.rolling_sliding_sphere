@@ -2,7 +2,7 @@ variable	name string rollingPart
 
 variable	z loop 10
 
-variable	coeffFric index 0.0 0.087489 0.176327 0.267949 0.286745 0.324920 			0.363970 0.577350 1.732051 5.671282
+variable	coeffFric index 0.0 0.087489 0.176327 0.267949 0.286745 0.324920 0.363970 0.577350 1.732051 5.671282
 
 thermo_modify	flush yes lost warn
 
