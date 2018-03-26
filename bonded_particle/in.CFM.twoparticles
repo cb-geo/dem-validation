@@ -1,0 +1,96 @@
+variable	name string twoPart
+
+thermo_modify	flush yes lost warn
+
+units		si
+
+###############################################
+# Particle parameters
+################################################
+
+variable	min_rad equal 0.5
+
+variable 	sk equal ${min_rad}
+
+variable	coeffRes equal 0.1
+variable	coeffFric equal 0.5
+
+variable	kn equal 10^5
+variable	kt equal 0.2*${kn}
+
+variable	c equal 10^100
+variable	t equal 10^100
+
+variable	EnlFact equal 1.0
+
+variable	gravity equal 10.0
+variable	density equal 1.0
+
+variable	min_mass equal ${density}*4.0/3.0*PI*${min_rad}*${min_rad}*${min_rad}
+variable	a equal (-2.0*log(${coeffRes})/PI)^2
+variable        gamma_n equal sqrt($a*2*${kn}/${min_mass}/(1+0.25*$a))
+variable        gamma_t equal ${gamma_n}*0.5
+
+variable	tcol equal PI/sqrt(2*${kn}/${min_mass}-${gamma_n}/4.0)
+
+variable	dt equal 10^-6
+
+timestep	${dt}
+
+###############################################
+
+variable	dumpfreq equal 100
+variable	logfreq equal 1000
+
+newton 		on
+atom_style	sphere
+
+boundary	f f f
+
+region		boxreg block -50 50 -50 50 -50 50
+create_box	1 boxreg
+
+######### No viscoelastic damping for nornal nor tangential forces #########
+
+pair_style	cfm &
+		${kn} ${kt} 0 0 ${coeffFric} 0 ${t} ${c} ${EnlFact}
+
+pair_coeff	* *
+
+#neighbor        ${sk} bin
+neighbor        1 bin
+thermo 		${logfreq}
+comm_modify 	mode multi group all vel yes
+
+################## Spheres creation and their properties ####################
+
+create_atoms 	1 single 15 15 15
+
+create_atoms 	1 single 14 15 15
+
+set 		atom 1 diameter 1
+
+set 		atom 2 diameter 1
+
+group		group1 id 1
+
+group		group2 id 2
+
+fix		grav group2 gravity ${gravity} vector 0 0 -1
+
+fix		1 group2 nve/sphere
+
+fix 		stop group1 recenter INIT INIT INIT
+
+compute 	1 all pair/local p1 p2 p3 p4 p5 p6 p7 p8 p9 p10
+
+dump		1 all custom ${dumpfreq} ${name}_pour.dump &
+		id type radius x y z fx fy fz mass
+
+dump		2 all local ${dumpfreq} ${name}4_force.dump index c_1[1] c_1[2] c_1[3]
+
+dump		3 all xyz ${dumpfreq} ${name}_xyz_pour.dump
+
+thermo_style	custom step cpu atoms ke
+
+run		2000000
